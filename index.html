@@ -2,12 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="清核对账助手：在浏览器本地完成订单与收款表的匹配、差额分析和Excel报告导出。">
   <meta name="theme-color" content="#102a43">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="清核对账">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>清核对账助手｜订单与收款自动核对</title>
-  <link rel="stylesheet" href="styles.css?v=1.0.1">
+  <link rel="manifest" href="manifest.webmanifest?v=1.1.1">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1.1.1">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.1.1">
+  <link rel="stylesheet" href="styles.css?v=1.1.1">
 </head>
 <body>
   <a class="skip-link" href="#workspace">跳到操作区</a>
@@ -17,8 +25,18 @@
       <span><strong>清核</strong><small>对账助手</small></span>
     </a>
     <div class="top-status"><i></i><span>本地处理</span><b>文件不会上传</b></div>
-    <button class="text-button" id="open-guide" type="button">使用说明</button>
+    <div class="top-actions">
+      <button class="text-button" id="header-install" type="button" hidden>安装到 iPhone</button>
+      <button class="text-button" id="open-guide" type="button">使用说明</button>
+    </div>
   </header>
+
+  <section class="ios-install-card shell" id="ios-install-card" hidden aria-label="安装到 iPhone">
+    <div class="install-app-icon" aria-hidden="true"><span>✓</span></div>
+    <div class="install-copy"><strong>安装到 iPhone 主屏幕</strong><span>全屏使用，像普通 App 一样打开；表格仍只在本机处理。</span></div>
+    <button id="open-install-guide" type="button">查看安装方法</button>
+    <button class="install-dismiss" id="dismiss-install" type="button" aria-label="关闭安装提示">×</button>
+  </section>
 
   <main id="workspace">
     <section class="hero shell">
@@ -168,9 +186,19 @@
     <p class="dialog-tip">正式使用前，请先用少量脱敏数据核对业务规则。工具不会替代财务审核。</p>
   </dialog>
 
+  <dialog id="install-dialog" class="install-dialog">
+    <div class="dialog-head"><div><p class="eyebrow">INSTALL ON IPHONE</p><h2>安装到 iPhone</h2></div><button id="close-install-guide" type="button" aria-label="关闭">×</button></div>
+    <div class="install-steps">
+      <article><b>1</b><div><strong>使用 Safari 打开</strong><span>必须使用苹果自带的 Safari 浏览器。</span></div></article>
+      <article><b>2</b><div><strong>点击底部“分享”</strong><span>图标是一个方框，上方有向上的箭头。</span></div></article>
+      <article><b>3</b><div><strong>选择“添加到主屏幕”</strong><span>最后点击右上角“添加”，桌面就会出现应用图标。</span></div></article>
+    </div>
+    <p class="dialog-tip">安装后可全屏打开。首次使用和更新版本时请保持联网。</p>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="xlsx.full.min.js"></script>
   <script src="core.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=1.1.1"></script>
 </body>
 </html>

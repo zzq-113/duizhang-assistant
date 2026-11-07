@@ -13,6 +13,20 @@
     error:$('#error-box'),errorMessage:$('#error-message'),body:$('#result-body'),search:$('#result-search'),toast:$('#toast')
   };
 
+  function setupMobileApp(){
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)||new URLSearchParams(location.search).has('mobile-preview');
+    const isStandalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+    const installCard=$('#ios-install-card');const headerInstall=$('#header-install');const installDialog=$('#install-dialog');
+    let dismissed=false;try{dismissed=localStorage.getItem('qinghe-ios-install-dismissed')==='1'}catch(error){}
+    if(isIOS&&!isStandalone){headerInstall.hidden=false;if(!dismissed)installCard.hidden=false}
+    const openInstall=()=>installDialog.showModal();
+    $('#open-install-guide').addEventListener('click',openInstall);headerInstall.addEventListener('click',openInstall);
+    $('#close-install-guide').addEventListener('click',()=>installDialog.close());
+    installDialog.addEventListener('click',event=>{if(event.target===installDialog)installDialog.close()});
+    $('#dismiss-install').addEventListener('click',()=>{installCard.hidden=true;try{localStorage.setItem('qinghe-ios-install-dismissed','1')}catch(error){}});
+    if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+  }
+
   function showToast(message){elements.toast.textContent=message;elements.toast.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>elements.toast.classList.remove('show'),2800)}
   function showError(message){elements.error.hidden=false;elements.errorMessage.textContent=message;elements.empty.hidden=true;elements.results.hidden=true;showToast(message)}
   function clearError(){elements.error.hidden=true;elements.errorMessage.textContent=''}
@@ -158,6 +172,7 @@
   function copyRequirements(){const text=`对账工具定制需求清单\n1. 订单表样例（请脱敏）：\n2. 收款表样例（请脱敏）：\n3. 两张表用于匹配的字段：\n4. 两张表的金额字段：\n5. 是否存在拆单、合并付款、退款或手续费：\n6. 允许的金额误差：\n7. 需要导出的字段和公司模板：\n8. 每次大约处理多少行：`;
     navigator.clipboard?.writeText(text).then(()=>showToast('客户需求清单已复制')).catch(()=>showToast('浏览器未允许复制，请从使用说明中手动记录'))}
 
+  setupMobileApp();
   elements.orderFile.addEventListener('change',event=>event.target.files[0]&&parseFile(event.target.files[0],'order').catch(error=>showError(error.message)));
   elements.paymentFile.addEventListener('change',event=>event.target.files[0]&&parseFile(event.target.files[0],'payment').catch(error=>showError(error.message)));
   [['order',elements.orderDrop],['payment',elements.paymentDrop]].forEach(([kind,drop])=>{['dragenter','dragover'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',event=>{const file=event.dataTransfer.files[0];if(file)parseFile(file,kind).catch(error=>showError(error.message))})});

@@ -21,6 +21,10 @@
 
 网页不需要安装软件，文件仅在浏览器中处理。正式处理数据前，请先使用少量脱敏样表确认业务规则。
 
+## iPhone 安装
+
+使用 iPhone 的 Safari 打开公开网址，点击底部“分享”，选择“添加到主屏幕”，再点击“添加”。安装后可以像普通 App 一样从桌面全屏打开。
+
 ## 电脑安装版
 
 Windows `.exe` 和 Mac `.dmg` 安装包可在 [GitHub Releases](https://github.com/zzq-113/duizhang-assistant/releases) 下载。桌面版提供原生 Excel 报告保存窗口，详细步骤见《安装说明》。
