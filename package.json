@@ -1,0 +1,79 @@
+{
+  "name": "qinghe-reconcile-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "清核对账助手桌面版：订单与收款自动核对及 Excel 报告导出",
+  "author": "zzq-113",
+  "license": "UNLICENSED",
+  "main": "electron-main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis --x64 --publish never",
+    "build:mac": "electron-builder --mac dmg --universal --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "cn.qinghe.reconcile",
+    "productName": "清核对账助手",
+    "artifactName": "清核对账助手-${version}-${os}-${arch}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "."
+    },
+    "files": [
+      "index.html",
+      "styles.css",
+      "app.js",
+      "core.js",
+      "xlsx.full.min.js",
+      "electron-main.cjs",
+      "preload.cjs",
+      "icon.svg",
+      "README.md",
+      "安装说明.md",
+      "THIRD_PARTY_LICENSES.txt"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
+      ],
+      "category": "public.app-category.business",
+      "icon": "icon.svg",
+      "identity": null
+    },
+    "dmg": {
+      "title": "清核对账助手 ${version}",
+      "backgroundColor": "#f7f9fa",
+      "iconSize": 96,
+      "contents": [
+        { "x": 140, "y": 220 },
+        { "x": 400, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon.svg",
+      "executableName": "QingheReconcile"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "清核对账助手",
+      "uninstallDisplayName": "清核对账助手"
+    }
+  }
+}

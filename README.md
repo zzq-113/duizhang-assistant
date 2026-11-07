@@ -21,6 +21,12 @@
 
 网页不需要安装软件，文件仅在浏览器中处理。正式处理数据前，请先使用少量脱敏样表确认业务规则。
 
+## 电脑安装版
+
+Windows `.exe` 和 Mac `.dmg` 安装包可在 [GitHub Releases](https://github.com/zzq-113/duizhang-assistant/releases) 下载。桌面版提供原生 Excel 报告保存窗口，详细步骤见《安装说明》。
+
+首版安装包暂未购买商业代码签名证书，系统可能显示未知发布者提醒。请只从本仓库 Releases 页面下载。
+
 ## 客户接单需要确认
 
 1. 客户提供两张脱敏样表。

@@ -118,7 +118,7 @@
     const safe=safeRows(rows);const worksheet=XLSX.utils.json_to_sheet(safe,{header:headers});worksheet['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(0,safe.length),c:headers.length-1}})};worksheet['!cols']=widths.map(width=>({wch:width}));XLSX.utils.book_append_sheet(workbook,worksheet,name);
   }
 
-  function exportWorkbook(){
+  async function exportWorkbook(){
     if(!state.result)return;
     try{
       const workbook=XLSX.utils.book_new();const generated=new Date();
@@ -134,7 +134,14 @@
       addJsonSheet(workbook,'收款原表',paymentSourceRows,['原文件行号',...state.payment.headers],[12,...state.payment.headers.map(()=>14)]);
       const guide=[['使用说明'],['1. 对账概览：查看数量、金额合计及空白编号。'],['2. 对账明细：查看全部唯一编号的核对结果。'],['3. 异常明细：只保留需要人工处理的记录。'],['4. 原表：保留本次读取的数据，“原文件行号”方便回到源文件复核。'],[],['状态说明'],['核对一致：两张表都有该编号，金额差在允许误差内，且没有重复。'],['未收到款：订单表有编号，收款表没有。'],['仅收款表有：收款表有编号，订单表没有。'],['金额不一致：两张表都有编号，但金额差超出允许误差。'],['重复编号：同一编号在任意一张表中出现多行，程序已按编号合计。']];const guideSheet=XLSX.utils.aoa_to_sheet(guide);guideSheet['!cols']=[{wch:88}];XLSX.utils.book_append_sheet(workbook,guideSheet,'使用说明');
       const date=`${generated.getFullYear()}${String(generated.getMonth()+1).padStart(2,'0')}${String(generated.getDate()).padStart(2,'0')}_${String(generated.getHours()).padStart(2,'0')}${String(generated.getMinutes()).padStart(2,'0')}`;
-      XLSX.writeFile(workbook,`订单收款对账报告_${date}.xlsx`,{compression:true});showToast('Excel 报告已生成');
+      const fileName=`订单收款对账报告_${date}.xlsx`;
+      if(window.desktopBridge?.saveWorkbook){
+        const bytes=XLSX.write(workbook,{bookType:'xlsx',type:'array',compression:true});
+        const result=await window.desktopBridge.saveWorkbook(fileName,bytes);
+        showToast(result.saved?'Excel 报告已保存':'已取消保存');
+      }else{
+        XLSX.writeFile(workbook,fileName,{compression:true});showToast('Excel 报告已生成');
+      }
     }catch(error){showError(`导出失败：${error.message}`)}
   }
 
