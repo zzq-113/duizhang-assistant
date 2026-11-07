@@ -1,0 +1,94 @@
+name: Build Desktop Installers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - electron-main.cjs
+      - preload.cjs
+      - icon.svg
+      - index.html
+      - styles.css
+      - app.js
+      - core.js
+      - xlsx.full.min.js
+      - RELEASE_NOTES.md
+      - .github/workflows/build-installers.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-installers
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows x64
+            script: build:win
+            artifact: Windows-x64
+            output: release/*.exe
+          - os: macos-15
+            label: Mac universal
+            script: build:mac
+            artifact: Mac-universal
+            output: release/*.dmg
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build installer
+        run: npm run ${{ matrix.script }}
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-${{ matrix.artifact }}
+          path: ${{ matrix.output }}
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Publish installers
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Download installers
+        uses: actions/download-artifact@v8
+        with:
+          pattern: installer-*
+          path: installers
+          merge-multiple: true
+      - name: Create checksums
+        run: |
+          cd installers
+          sha256sum * > SHA256SUMS.txt
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="desktop-v1.0.0"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" installers/* --clobber
+            gh release edit "$TAG" --title "清核对账助手 1.0 桌面版" --notes-file RELEASE_NOTES.md
+          else
+            gh release create "$TAG" installers/* --title "清核对账助手 1.0 桌面版" --notes-file RELEASE_NOTES.md
+          fi
