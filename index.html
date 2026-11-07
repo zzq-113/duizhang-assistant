@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="清核对账助手：在浏览器本地完成订单与收款表的匹配、差额分析和Excel报告导出。">
+  <meta name="theme-color" content="#102a43">
+  <title>清核对账助手｜订单与收款自动核对</title>
+  <link rel="stylesheet" href="styles.css?v=1.0.1">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">跳到操作区</a>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+      <span><strong>清核</strong><small>对账助手</small></span>
+    </a>
+    <div class="top-status"><i></i><span>本地处理</span><b>文件不会上传</b></div>
+    <button class="text-button" id="open-guide" type="button">使用说明</button>
+  </header>
+
+  <main id="workspace">
+    <section class="hero shell">
+      <div>
+        <p class="eyebrow">OFFICE RECONCILIATION TOOL</p>
+        <h1>两张表，<br><em>自动找出对不上的账。</em></h1>
+        <p class="hero-copy">上传订单表和收款表，按订单号核对金额。自动识别漏收、额外收款、金额差异和重复编号，并导出完整 Excel 报告。</p>
+      </div>
+      <div class="hero-steps" aria-label="使用步骤">
+        <span><b>01</b>选择文件</span><i></i><span><b>02</b>确认字段</span><i></i><span><b>03</b>导出报告</span>
+      </div>
+    </section>
+
+    <section class="app-shell shell">
+      <aside class="setup-panel">
+        <div class="panel-heading">
+          <span>设置</span>
+          <button id="load-demo" type="button">加载演示数据</button>
+        </div>
+
+        <div class="step-block">
+          <div class="step-title"><b>1</b><span>选择两张表</span></div>
+          <label class="upload-card" id="order-drop">
+            <input id="order-file" type="file" accept=".xlsx,.xls,.csv,.tsv" aria-label="选择订单表">
+            <span class="upload-type">订单表</span>
+            <strong id="order-file-name">选择 XLSX / CSV 文件</strong>
+            <small id="order-file-meta">包含订单编号和应收金额</small>
+            <i aria-hidden="true">＋</i>
+          </label>
+          <label class="upload-card" id="payment-drop">
+            <input id="payment-file" type="file" accept=".xlsx,.xls,.csv,.tsv" aria-label="选择收款表">
+            <span class="upload-type payment">收款表</span>
+            <strong id="payment-file-name">选择 XLSX / CSV 文件</strong>
+            <small id="payment-file-meta">包含订单编号和实收金额</small>
+            <i aria-hidden="true">＋</i>
+          </label>
+        </div>
+
+        <div class="step-block disabled" id="mapping-block">
+          <div class="step-title"><b>2</b><span>确认工作表与字段</span></div>
+          <div class="mapping-group">
+            <p>订单表</p>
+            <div class="field-grid">
+              <label>工作表<select id="order-sheet"></select></label>
+              <label>表头行<input id="order-header-row" type="number" min="1" max="20" value="1"></label>
+              <label>匹配编号<select id="order-key"></select></label>
+              <label>应收金额<select id="order-amount"></select></label>
+            </div>
+          </div>
+          <div class="mapping-group">
+            <p>收款表</p>
+            <div class="field-grid">
+              <label>工作表<select id="payment-sheet"></select></label>
+              <label>表头行<input id="payment-header-row" type="number" min="1" max="20" value="1"></label>
+              <label>匹配编号<select id="payment-key"></select></label>
+              <label>实收金额<select id="payment-amount"></select></label>
+            </div>
+          </div>
+          <label class="tolerance-field">允许金额误差（元）<input id="tolerance" type="number" min="0" step="0.01" value="0.01"></label>
+          <p class="mapping-note">相同编号出现多行时，程序会先合计金额，同时在结果中标记重复记录。</p>
+        </div>
+
+        <button class="primary-button" id="run-button" type="button" disabled>开始自动对账 <span>→</span></button>
+        <p class="local-note"><span aria-hidden="true">✓</span> 浏览器本地运算，关闭页面后不保留文件</p>
+      </aside>
+
+      <section class="result-panel">
+        <div class="result-head">
+          <div>
+            <p class="eyebrow">RECONCILIATION RESULT</p>
+            <h2>对账结果</h2>
+          </div>
+          <div class="result-actions">
+            <button id="reset-button" class="ghost-button" type="button">重新开始</button>
+            <button id="export-button" class="export-button" type="button" disabled>导出 Excel 报告</button>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <article><span>订单编号</span><strong id="metric-total">—</strong><small>参与核对的唯一编号</small></article>
+          <article class="success"><span>核对一致</span><strong id="metric-matched">—</strong><small>金额在允许误差内</small></article>
+          <article class="warning"><span>需要处理</span><strong id="metric-issues">—</strong><small>漏单、差额或重复</small></article>
+          <article><span>总金额差</span><strong id="metric-difference">—</strong><small>实收减应收</small></article>
+        </div>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-visual" aria-hidden="true"><span></span><i></i><b>✓</b></div>
+          <h3>等待开始对账</h3>
+          <p>选择两张表后，系统会在这里显示异常记录。</p>
+          <button id="empty-demo" type="button">没有文件？使用演示数据</button>
+        </div>
+
+        <div class="results" id="results" hidden>
+          <div class="filter-row">
+            <div class="filter-tabs" id="filter-tabs" role="tablist" aria-label="结果筛选">
+              <button class="active" type="button" data-filter="全部">全部 <span id="count-all">0</span></button>
+              <button type="button" data-filter="核对一致">核对一致 <span id="count-matched">0</span></button>
+              <button type="button" data-filter="未收到款">未收到款 <span id="count-missing">0</span></button>
+              <button type="button" data-filter="金额不一致">金额不一致 <span id="count-diff">0</span></button>
+              <button type="button" data-filter="仅收款表有">额外收款 <span id="count-extra">0</span></button>
+              <button type="button" data-filter="重复编号">重复编号 <span id="count-duplicate">0</span></button>
+            </div>
+            <label class="search-field"><span>搜索</span><input id="result-search" type="search" placeholder="输入编号"></label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>状态</th><th>匹配编号</th><th>订单金额</th><th>收款金额</th><th>差额</th><th>订单行数</th><th>收款行数</th></tr></thead>
+              <tbody id="result-body"></tbody>
+            </table>
+          </div>
+          <div class="table-footer"><span id="table-summary"></span><small>预览最多显示 500 条，Excel 报告包含全部结果</small></div>
+        </div>
+
+        <div class="error-box" id="error-box" hidden><strong>无法完成对账</strong><p id="error-message"></p></div>
+      </section>
+    </section>
+
+    <section class="business shell">
+      <div>
+        <p class="eyebrow">CUSTOMIZATION</p>
+        <h2>这款工具可以直接使用，<br>也可以按客户规则继续定制。</h2>
+      </div>
+      <div class="business-grid">
+        <article><b>01</b><h3>字段适配</h3><p>适配客户自己的订单号、流水号、退款、平台费用等字段。</p></article>
+        <article><b>02</b><h3>规则扩展</h3><p>增加拆单、合并付款、日期范围、渠道和业务人员等核对规则。</p></article>
+        <article><b>03</b><h3>报告模板</h3><p>导出带客户公司名称、固定表头、异常颜色和汇总结构的报告。</p></article>
+      </div>
+      <button id="copy-requirements" class="outline-button" type="button">复制客户需求清单</button>
+    </section>
+  </main>
+
+  <footer class="footer shell">
+    <span>清核对账助手 1.0</span>
+    <span>支持 XLSX、XLS、CSV、TSV · 单次最多 100,000 行</span>
+    <span>使用 SheetJS Community Edition</span>
+  </footer>
+
+  <dialog id="guide-dialog">
+    <div class="dialog-head"><div><p class="eyebrow">USER GUIDE</p><h2>使用说明</h2></div><button id="close-guide" type="button" aria-label="关闭">×</button></div>
+    <ol>
+      <li><b>准备文件</b><span>订单表和收款表都需要包含一个共同编号，例如订单号或流水号，并各自包含金额列。</span></li>
+      <li><b>确认表头</b><span>如果第一行是标题，请把“表头行”改成实际字段名称所在的行。</span></li>
+      <li><b>选择字段</b><span>分别选择两张表中的匹配编号和金额字段，设置允许误差后开始对账。</span></li>
+      <li><b>处理异常</b><span>先看未收到款、额外收款和金额差异，再检查重复编号。</span></li>
+      <li><b>导出报告</b><span>报告包含概览、完整明细、异常明细及两张原始表，方便复核。</span></li>
+    </ol>
+    <p class="dialog-tip">正式使用前，请先用少量脱敏数据核对业务规则。工具不会替代财务审核。</p>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="xlsx.full.min.js"></script>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
